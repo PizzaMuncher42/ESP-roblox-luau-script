@@ -13,7 +13,7 @@ local ESPFrames = {}
 
 -- UI Variables
 
-local MainUI = Instance.new('ScreenGui',Player.PlayerGui)
+local MainUI = Instance.new('ScreenGui',CoreGui)
 MainUI.IgnoreGuiInset = true
 if false then
 	local TargettedUI = Instance.new('Frame',MainUI)
