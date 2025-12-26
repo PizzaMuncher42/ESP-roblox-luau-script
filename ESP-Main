@@ -1,0 +1,108 @@
+-- Services
+local TweeningS = game:GetService('TweenService')
+local RunS = game:GetService('RunService')
+local CoreGui = game:GetService('CoreGui')
+
+-- Variables
+local Players = game:GetService('Players')
+local Player = Players.LocalPlayer
+local PCharacter = Player.Character
+local Camera = workspace.CurrentCamera
+local ESPTargets = {}
+local ESPFrames = {}
+
+-- UI Variables
+
+local MainUI = Instance.new('ScreenGui',Player.PlayerGui)
+MainUI.IgnoreGuiInset = true
+if false then
+	local TargettedUI = Instance.new('Frame',MainUI)
+	TargettedUI.AnchorPoint = Vector2.new(0.5,0.5)
+	TargettedUI.Position = UDim2.new(0.5,0,0.5)
+	TargettedUI.Size = UDim2.new(0.15,0,0.15,0)
+	TargettedUI.Transparency = 0.6
+	local TUICorner = Instance.new('UICorner',TargettedUI)
+	TUICorner.CornerRadius = UDim.new(1,0)
+	local TUIStroke = Instance.new('UIStroke',TargettedUI)
+	TUIStroke.Color = Color3.fromRGB(255, 0, 0)
+	TUIStroke.Thickness = 1
+	local TUIAspectRatio = Instance.new('UIAspectRatioConstraint', TargettedUI)
+end
+
+-- Functions
+function AssignESP (SPlayer)
+
+	ESPFrames[SPlayer.Name] = {}
+
+	local ESPBox = Instance.new('Frame', MainUI) -- Box
+	ESPBox.AnchorPoint = Vector2.new(0.5 ,0.5)
+	ESPBox.Name = Player.Name
+	ESPBox.Transparency = 0.9
+	ESPBox.BackgroundColor3 = Color3.fromRGB(255,255,255)
+	local UIStroke = Instance.new('UIStroke', ESPBox)
+	UIStroke.Color = Color3.fromRGB(255, 0, 0)
+	ESPFrames[SPlayer.Name][1] = ESPBox
+	local ESPBoxName = Instance.new('TextLabel', ESPBox)
+	ESPBoxName.AnchorPoint = Vector2.new(0.5,1)
+	ESPBoxName.Position = UDim2.new(0.5,0,0,0)
+	ESPBoxName.Size = UDim2.new(1,0,0.1,0)
+	ESPBoxName.TextColor3 = Color3.fromRGB(255,0,0)
+	ESPBoxName.BackgroundTransparency = 1
+	ESPBoxName.TextStrokeTransparency = 1
+	ESPBoxName.Text = SPlayer.Name
+	ESPBoxName.TextScaled = true
+
+	local ESPGuide = Instance.new('Frame', MainUI)
+	ESPGuide.BorderSizePixel = 0
+	ESPGuide.AnchorPoint = Vector2.new(0.5 ,0.5)
+	ESPGuide.Name = Player.Name.. 'Guide'
+	ESPGuide.BackgroundColor3 = Color3.fromRGB(255,0,0)
+	ESPFrames[SPlayer.Name][2] = ESPGuide
+
+	table.insert(ESPTargets, SPlayer)
+end
+
+function UnAssignESP (SPlayer)
+	table.remove(ESPTargets, table.find(ESPTargets, SPlayer))
+	ESPFrames[SPlayer.Name][1]:Destroy()
+	ESPFrames[SPlayer.Name][2]:Destroy()
+	ESPFrames[SPlayer.Name] = nil
+end
+
+-- ESP
+
+for _,SPlayer in pairs(Players:GetPlayers()) do
+	AssignESP(SPlayer)
+end
+
+Players.PlayerAdded:Connect(function(SPlayer)
+	AssignESP(SPlayer)
+end)
+
+Players.PlayerRemoving:Connect(function(SPlayer)
+	UnAssignESP(SPlayer)
+end)
+
+RunS.RenderStepped:Connect(function()
+	for _,Target in pairs(ESPTargets) do
+		local GuideStart = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y)
+		local ESPBox = ESPFrames[Target.Name][1]
+		local ESPGuide = ESPFrames[Target.Name][2]
+		if Target.Character then
+			local VPosition,Visible = Camera:WorldToViewportPoint(Target.Character.PrimaryPart.Position)
+			if (Visible or VPosition.Z>0) and Target.Character.Humanoid.Health>0 then
+				ESPBox.Visible = true
+				ESPGuide.Visible = true
+				local Direction = Vector2.new(VPosition.X, VPosition.Y)-GuideStart
+				ESPGuide.Position = UDim2.new(0,GuideStart.X+((Direction.X)/2),0,GuideStart.Y+((Direction.Y)/2))
+				ESPGuide.Size = UDim2.new(0,Direction.Magnitude,0,1)
+				ESPGuide.Rotation = math.deg(math.atan2(Direction.Y, Direction.X))
+				ESPBox.Position = UDim2.new(0,VPosition.X,0,VPosition.Y)
+				ESPBox.Size = UDim2.new(0,Target.Character.PrimaryPart.Size.X/VPosition.Z*1250,0,Target.Character.PrimaryPart.Size.Y/VPosition.Z*2000)
+			else
+				ESPBox.Visible = false
+				ESPGuide.Visible = false
+			end
+		end
+	end
+end)
