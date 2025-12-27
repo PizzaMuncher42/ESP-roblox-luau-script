@@ -90,7 +90,7 @@ RunS.RenderStepped:Connect(function()
 			local ESPBox = ESPFrames[Target.Name][1]
 			local ESPGuide = ESPFrames[Target.Name][2]
 			if Target.Character then
-				local VPosition,Visible = Camera:WorldToViewportPoint(Target.Character.PrimaryPart.Position)
+				local VPosition,Visible = Camera:WorldToViewportPoint(Target.Character.HumanoidRootPart.Position)
 				if (Visible or VPosition.Z>0) and Target.Character.Humanoid.Health>0 then
 					ESPBox.Visible = true
 					ESPGuide.Visible = true
@@ -99,7 +99,7 @@ RunS.RenderStepped:Connect(function()
 					ESPGuide.Size = UDim2.new(0,Direction.Magnitude,0,1)
 					ESPGuide.Rotation = math.deg(math.atan2(Direction.Y, Direction.X))
 					ESPBox.Position = UDim2.new(0,VPosition.X,0,VPosition.Y)
-					ESPBox.Size = UDim2.new(0,Target.Character.PrimaryPart.Size.X/VPosition.Z*1250,0,Target.Character.PrimaryPart.Size.Y/VPosition.Z*2000)
+					ESPBox.Size = UDim2.new(0,Target.Character.HumanoidRootPart.Size.X/VPosition.Z*1250,0,Target.Character.HumanoidRootPart.Size.Y/VPosition.Z*2000)
 				else
 					ESPBox.Visible = false
 					ESPGuide.Visible = false
